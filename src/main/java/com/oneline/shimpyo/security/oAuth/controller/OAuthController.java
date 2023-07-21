@@ -36,6 +36,7 @@ public class OAuthController {
         return new BaseResponse<>();
     }
 
+
     @GetMapping("/api/social/login/{id}")
     public BaseResponse<Map<String, String>>  socialLogin(@PathVariable Long id, HttpServletResponse response) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
