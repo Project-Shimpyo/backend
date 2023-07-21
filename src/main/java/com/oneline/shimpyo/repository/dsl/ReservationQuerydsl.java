@@ -96,7 +96,8 @@ public class ReservationQuerydsl {
 
         JPAQuery<Long> countQuery = jqf.select(reservation.count())
                 .from(reservation)
-                .innerJoin(reservation.room.house, house).on(house.id.eq(houseId))
+                .join(reservation.room, room)
+                .join(room.house, house).on(house.id.eq(houseId))
                 .where(reservation.reservationStatus.eq(reservationStatus));
 
         return PageableExecutionUtils.getPage(reservationList, pageable, countQuery::fetchOne);

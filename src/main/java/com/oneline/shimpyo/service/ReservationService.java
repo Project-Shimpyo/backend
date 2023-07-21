@@ -22,4 +22,5 @@ public interface ReservationService {
     void cancelReservation(long memberId, long reservationId, PatchReservationReq patchReservationReq)
             throws BaseException, IamportResponseException, IOException;
 
+    void updateReservationStatus(long memberId, long reservationId);
 }

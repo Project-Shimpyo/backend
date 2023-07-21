@@ -8,23 +8,19 @@ import com.oneline.shimpyo.domain.reservation.Reservation;
 import com.oneline.shimpyo.modules.S3FileHandler;
 import com.oneline.shimpyo.repository.MemberRepository;
 import com.oneline.shimpyo.repository.dsl.MemberQuerydsl;
-import com.oneline.shimpyo.security.CustomBCryptPasswordEncoder;
 import com.oneline.shimpyo.security.auth.CurrentMember;
 import com.oneline.shimpyo.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import retrofit2.http.Multipart;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 import static com.oneline.shimpyo.domain.BaseResponseStatus.*;
@@ -43,10 +39,6 @@ public class MemberController {
 
     @PostMapping("/api/join")
     public BaseResponse<Void> join(@RequestBody MemberReq memberReq) {
-
-        // 이미지 가져온 후
-//        FileReq fileReq = s3FileHandler.uploadFile(defaultImage).get();
-
         boolean isValid = validateRequest(memberReq);
         if(!isValid)
             return new BaseResponse<>(MEMBER_REGEX_WRONG);
@@ -160,7 +152,7 @@ public class MemberController {
     }
 
     // Access 토큰 만료 시 새로운 토큰을 발급
-    @GetMapping("/user/refresh")
+    @GetMapping("/api/refresh")
     public BaseResponse<Map<String, String>> refresh(HttpServletRequest request, HttpServletResponse response, @CurrentMember Member member) {
         Cookie[] cookies = request.getCookies();
         String name = null;
@@ -183,9 +175,9 @@ public class MemberController {
 
     @PatchMapping("/user/email")
     public BaseResponse<Void> updateEmail(@CurrentMember Member member, @RequestBody ChangeEmailReq email) {
-        if(!validateEmail(email.getEmail())) {
+        if(!validateEmail(email.getEmail()))
             return new BaseResponse<>(MEMBER_REGEX_WRONG);
-        }
+
         memberService.updateEmail(email.getEmail(), member.getId());
         return new BaseResponse<>();
     }
@@ -241,14 +233,14 @@ public class MemberController {
     @PatchMapping("/user/change-profile")
     public BaseResponse<Void> changeProfile(@CurrentMember Member member,
                                             @RequestPart(required = false) MultipartFile multipartFile,
-                                            @RequestPart String selfIntroduce) {
+                                            @RequestPart SelfIntroduceReq selfIntroduce) {
         FileReq fileReq = s3FileHandler.uploadFile(multipartFile).get();
-        memberService.changeProfile(member, fileReq, selfIntroduce);
+        memberService.changeProfile(member, fileReq, selfIntroduce.getSelfIntroduce());
         return new BaseResponse<>();
     }
 
-    @GetMapping("/api/show-profile")
-    public BaseResponse<MemberProfileRes> showProfile(@RequestParam Long userId) {
+    @GetMapping("/api/show-profile/{userId}")
+    public BaseResponse<MemberProfileRes> showProfile(@PathVariable Long userId) {
         MemberProfileRes memberProfile = memberService.findMemberProfile(userId);
 
         return new BaseResponse<>(memberProfile);

@@ -1,12 +1,9 @@
 package com.oneline.shimpyo.repository.dsl;
 
 import com.oneline.shimpyo.domain.member.Member;
-import com.oneline.shimpyo.domain.member.QMember;
-import com.oneline.shimpyo.domain.member.QMemberImage;
+
 import com.oneline.shimpyo.domain.member.dto.*;
-import com.oneline.shimpyo.domain.reservation.NonMemberReservation;
-import com.oneline.shimpyo.domain.reservation.QNonMemberReservation;
-import com.oneline.shimpyo.domain.reservation.QReservation;
+
 import com.oneline.shimpyo.domain.reservation.Reservation;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
@@ -14,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.oneline.shimpyo.domain.member.QMember.*;
 import static com.oneline.shimpyo.domain.member.QMemberImage.*;

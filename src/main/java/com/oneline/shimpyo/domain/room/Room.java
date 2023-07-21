@@ -5,6 +5,7 @@ import com.oneline.shimpyo.domain.house.House;
 import com.oneline.shimpyo.domain.reservation.NonMemberReservation;
 import com.oneline.shimpyo.domain.reservation.Reservation;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -20,6 +21,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter @Setter
 @NoArgsConstructor(access = PROTECTED)
+@AllArgsConstructor
 @Table(name = "ROOM")
 public class Room extends BaseEntity {
 
@@ -54,6 +56,10 @@ public class Room extends BaseEntity {
     
     private LocalTime checkIn;
     private LocalTime checkOut;
+
+    @ColumnDefault("0")
+    @Version
+    private Long version;
 
     @OneToMany(mappedBy = "room", cascade = ALL)
     private List<RoomImage> images = new ArrayList<>();

@@ -26,4 +26,5 @@ public class CouponController {
         long memberId = checkMember.getMemberId(member, true);
         return new BaseResponse<>(couponService.readCouponList(memberId));
     }
+
 }

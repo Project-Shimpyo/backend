@@ -12,8 +12,8 @@ cloud:
     region.static: ap-northeast-2
 
 spring:
-    profiles:
-      include: db, oauth
+  profiles:
+    include: db, oauth
 #  config:
 #    import: db-config.yml, application-oauth.yml
 
@@ -28,10 +28,10 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
-        #        show_sql: true
+#        show_sql: true
         format_sql: true
         default_batch_fetch_size: 100
   #    defer-datasource-initialization: true
@@ -44,16 +44,15 @@ spring:
 
   logging.level:
     org.hibernate.SQL: debug
-  #    org.hibernate.type: trace
+#    org.hibernate.type: trace
 
   security:
     oauth2:
       client:
         registration:
-
           kakao:
             client-id: temp
-            redirect-uri: "http://shimpyo-api.p-e.kr:8081/login/oauth2/code/kakao"
+            redirect-uri: http://shimpyo-api.p-e.kr:8081/login/oauth2/code/kakao
             client-authentication-method: POST
             authorization-grant-type: authorization_code
             scope: profile_nickname, account_email #동의 항목

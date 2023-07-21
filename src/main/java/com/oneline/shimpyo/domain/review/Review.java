@@ -14,7 +14,6 @@ import static javax.persistence.FetchType.LAZY;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
-@Builder
 @AllArgsConstructor
 @Getter @Setter
 @NoArgsConstructor(access = PROTECTED)
@@ -46,4 +45,19 @@ public class Review extends BaseEntity {
     @Enumerated(value = STRING)
     private ReviewRating reviewRating;
 
+    @Builder
+    public Review(House house, Member member, Reservation reservation, String contents, ReviewRating reviewRating) {
+        setHouseAndMember(house, member);
+        this.reservation = reservation;
+        this.contents = contents;
+        this.reviewRating = reviewRating;
+
+    }
+
+    public void setHouseAndMember(House house, Member member){
+        this.house = house;
+        this.member = member;
+        house.getReviews().add(this);
+        member.getReviews().add(this);
+    }
 }

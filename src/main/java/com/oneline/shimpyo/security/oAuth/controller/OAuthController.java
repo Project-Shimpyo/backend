@@ -36,6 +36,25 @@ public class OAuthController {
         return new BaseResponse<>();
     }
 
+    @GetMapping("/api/social/login/{id}")
+    public BaseResponse<Map<String, String>>  socialLogin(@PathVariable Long id, HttpServletResponse response) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
+
+        String accessToken = generateOAuth2Token(member, true, AT_EXP_TIME);
+        String refreshToken = generateOAuth2Token(member, true, RT_EXP_TIME);
+
+        // Refresh Token DB에 저장
+        memberService.updateRefreshToken(member.getEmail(), refreshToken);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("utf-8");
+        response.addHeader("Set-Cookie", createCookie(refreshToken).toString());
+
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put(AT_HEADER, accessToken);
+
+        return new BaseResponse<>(responseMap);
+    }
+
     @GetMapping("/api/oauth2-access")
     public BaseResponse<Map<String, String>> oauthToken(@RequestBody OAuth2IdReq request,
                                                         HttpServletResponse response) {

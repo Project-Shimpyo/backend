@@ -1,9 +1,6 @@
 package com.oneline.shimpyo.domain.house.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -13,6 +10,8 @@ import java.util.List;
 @Setter
 @Builder
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoomReq {
     private String name;
     private int price;

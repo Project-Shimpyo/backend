@@ -2,24 +2,25 @@ package com.oneline.shimpyo.service.impl;
 
 import com.oneline.shimpyo.domain.BaseException;
 import com.oneline.shimpyo.domain.house.*;
-import com.oneline.shimpyo.domain.house.dto.FileReq;
-import com.oneline.shimpyo.domain.house.dto.GetHouseListRes;
-import com.oneline.shimpyo.domain.house.dto.PatchHouseReq;
-import com.oneline.shimpyo.domain.house.dto.PostHouseReq;
+import com.oneline.shimpyo.domain.house.dto.*;
 import com.oneline.shimpyo.domain.member.Member;
-import com.oneline.shimpyo.domain.reservation.dto.HostHouseReq;
+import com.oneline.shimpyo.domain.review.dto.ReviewStatusCount;
 import com.oneline.shimpyo.domain.room.Room;
 import com.oneline.shimpyo.domain.room.RoomImage;
+import com.oneline.shimpyo.domain.room.dto.RoomInfo;
 import com.oneline.shimpyo.modules.S3FileHandler;
 import com.oneline.shimpyo.repository.*;
 import com.oneline.shimpyo.repository.dsl.HouseQuerydsl;
+import com.oneline.shimpyo.repository.dsl.ReviewQuerydsl;
 import com.oneline.shimpyo.service.HouseService;
-import com.oneline.shimpyo.service.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +31,15 @@ import static com.oneline.shimpyo.domain.BaseResponseStatus.*;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class HouseServiceImpl implements HouseService {
-
     private final HouseRepository houseRepository;
-    private final HouseQuerydsl houseQuerydsl;
     private final RoomRepository roomRepository;
     private final HouseOptionRepository houseOptionRepository;
     private final HouseAddressRepository houseAddressRepository;
     private final HouseImageRepository houseImageRepository;
     private final RoomImageRepository roomImageRepository;
     private final S3FileHandler s3FileHandler;
+    private final HouseQuerydsl houseQuerydsl;
+    private final ReviewQuerydsl reviewQuerydsl;
 
     @Override
     @Transactional
@@ -170,6 +171,42 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
+    public GetHouseDetailRes readHouseDetail(long houseId) {
+        // 숙소 관련 정보
+        HouseInfo foundHouse = Optional.ofNullable(houseQuerydsl.findHouseAndAddressByHouseId(houseId))
+                .orElseThrow(() -> new BaseException(HOUSE_NONEXISTENT));
+        foundHouse.setOptions(houseQuerydsl.findHouseOptionsByHouseId(houseId));
+        foundHouse.setHouseImages(houseQuerydsl.findHouseImagesByHouseId(houseId));
+        foundHouse.setReviewStatusCount(reviewQuerydsl.findCountByHouseId(houseId));
+
+        // 객실 관련 정보
+        List<RoomInfo> foundRooms = houseQuerydsl.findRoomsByHouseId(houseId);
+        LocalDateTime checkIn = LocalDateTime.now();
+        LocalDateTime checkOut = checkIn.plus(1, ChronoUnit.DAYS);
+        // 객실 이미지 저장 및 품절여부 체크
+        for (int i = 0; i < foundRooms.size(); i++) {
+            // 이미지 저장
+            List<String> foundRoomImages = houseQuerydsl.findRoomImagesByRoomId(foundRooms.get(i).getRoomId());
+            foundRooms.get(i).setRoomImages(foundRoomImages);
+
+            // 품절 여부 체크
+            if(houseQuerydsl.checkReservation(foundRooms.get(i).getRoomId(), checkIn, checkOut)) foundRooms.get(i).setSoldout(true);
+        }
+
+        // Response DTO에 저장
+        return GetHouseDetailRes.builder()
+                .house(foundHouse)
+                .rooms(foundRooms)
+                .build();
+    }
+
+    @Override
+    public List<GetHouseListRes> readHouseList(Pageable pageable, SearchFilterReq searchFilter, Member member) {
+        List<GetHouseListRes> foundHouseList = houseQuerydsl.findAllHouse(pageable, searchFilter, member);
+        return foundHouseList;
+    }
+
+    @Override
     @Transactional
     public void updateHouse(Member member, long houseId, PatchHouseReq patchHouseReq, List<MultipartFile> houseImages) {
         House foundHouse = houseRepository.findById(houseId)
@@ -285,8 +322,8 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public List<GetHouseListRes> readHouseList(long memberId) {
-        return houseQuerydsl.readHouseList(memberId);
+    public List<GetMyHouseListRes> readMyHouseList(long memberId) {
+        return houseQuerydsl.readMyHouseList(memberId);
     }
 
 }

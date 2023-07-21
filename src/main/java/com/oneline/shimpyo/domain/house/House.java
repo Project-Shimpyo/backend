@@ -21,6 +21,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter @Setter
 @NoArgsConstructor(access = PROTECTED)
 @Table(name = "HOUSE")
+@ToString
 public class House extends BaseEntity {
 
     @Id @GeneratedValue
@@ -50,6 +51,7 @@ public class House extends BaseEntity {
 
     @OneToMany(mappedBy = "house", cascade = ALL)
     private List<Wish> wishList = new ArrayList<>();
+    private double avgRating;
 
 
 
@@ -57,7 +59,7 @@ public class House extends BaseEntity {
 
     @Builder
     public House(Long id, Member member, String name, HouseType type, List<HouseOptions> houseOptions, String contents, HouseAddress houseAddress
-                , List<Room> rooms, List<HouseImage> images, List<Review> reviews, List<Wish> wishList) {
+                , List<Room> rooms, List<HouseImage> images, List<Review> reviews, List<Wish> wishList, double avgRating) {
         this.id = id;
         this.member = member;
         this.name = name;
@@ -69,6 +71,7 @@ public class House extends BaseEntity {
         this.images = images;
         this.reviews = reviews;
         this.wishList = wishList;
+        this.avgRating = avgRating;
     }
 
 }

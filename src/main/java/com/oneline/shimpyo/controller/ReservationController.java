@@ -96,4 +96,10 @@ public class ReservationController {
         return new BaseResponse<>();
     }
 
+    @PatchMapping("/{reservationId}/status")
+    public BaseResponse<Void> updateReservationStatus(@PathVariable long reservationId, @CurrentMember Member member){
+        long memberId = checkMember.getMemberId(member, true);
+        reservationService.updateReservationStatus(memberId, reservationId);
+        return new BaseResponse<>();
+    }
 }

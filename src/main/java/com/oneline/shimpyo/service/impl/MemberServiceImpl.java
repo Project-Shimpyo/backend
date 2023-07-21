@@ -261,7 +261,7 @@ public class MemberServiceImpl implements MemberService {
         findMember.setMemberImage(memberImage);
         findMember.setComments(selfIntroduce);
     }
-
+    
     @Override
     public MemberProfileRes findMemberProfile(Long memberId) {
         return memberQuerydsl.findMemberProfile(memberId);

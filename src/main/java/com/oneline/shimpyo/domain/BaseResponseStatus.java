@@ -78,10 +78,17 @@ public enum BaseResponseStatus {
     REFUND_WRONG(false, 3104, "환불 가능 금액보다 환불 요구 금액이 더 큽니다."),
     RESERVATION_WRONG_PEOPLE_COUNT(false, 3105, "인원수가 잘못되었습니다."),
     RESERVATION_HOST_HOUSE_EMPTY(false, 3106, "호스트하는 숙소가 없습니다"),
-    RESERVATION_EXISTENT(false, 3106, "예약이 존재하지 않습니다."),
+    RESERVATION_CANT_MY_HOUSE(false, 3107, "자기 자신의 숙소는 예약할 수 없습니다"),
+    RESERVATION_EXISTENT(false, 3108, "예약이 존재하지 않습니다."),
+    RESERVATION_ROOM_COUNT(false, 3109, "남은 방의 개수가 없습니다."),
 
     //coupon 3120
     COUPON_NONEXISTENT(false, 3120,"존재하지 않는 쿠폰입니다."),
+
+    //wish 3140
+    WISH_ALREADY_EXIST(false, 3140, "이미 관심 숙소에 추가된 숙소입니다."),
+    WISH_WRONG(false, 3141, "관심 숙소에 등록되지 않은 숙소입니다."),
+    WISH_COUNT_MAX(false, 3142, "관심 숙소 목록이 꽉 찼습니다."),
 
     /**
      * 4000 : 기타 오류

@@ -1,6 +1,5 @@
 package com.oneline.shimpyo.domain.review.dto;
 
-import com.oneline.shimpyo.domain.review.Review;
 import com.oneline.shimpyo.domain.review.ReviewRating;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.AllArgsConstructor;

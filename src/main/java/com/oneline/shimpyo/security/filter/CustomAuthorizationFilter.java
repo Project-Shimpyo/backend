@@ -49,7 +49,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         String servletPath = request.getServletPath();
         String token = null;
 
-        if(servletPath.equals("/user/refresh"))
+        if(servletPath.equals("/api/refresh"))
             token = extractRefreshToken(request);
         else
             token = extractToken(request);

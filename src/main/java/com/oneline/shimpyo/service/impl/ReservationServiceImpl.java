@@ -7,20 +7,21 @@ import com.oneline.shimpyo.domain.house.HouseImage;
 import com.oneline.shimpyo.domain.member.Member;
 import com.oneline.shimpyo.domain.member.MemberGrade;
 import com.oneline.shimpyo.domain.pay.PayMent;
+import com.oneline.shimpyo.domain.pay.PayStatus;
 import com.oneline.shimpyo.domain.reservation.Reservation;
 import com.oneline.shimpyo.domain.reservation.ReservationStatus;
 import com.oneline.shimpyo.domain.reservation.dto.*;
 import com.oneline.shimpyo.domain.room.Room;
-import com.oneline.shimpyo.repository.HouseImageRepository;
-import com.oneline.shimpyo.repository.MemberRepository;
-import com.oneline.shimpyo.repository.ReservationRepository;
-import com.oneline.shimpyo.repository.RoomRepository;
+import com.oneline.shimpyo.modules.aop.Retry;
+import com.oneline.shimpyo.modules.aop.RetryAspect;
+import com.oneline.shimpyo.repository.*;
 import com.oneline.shimpyo.repository.dsl.MyCouponQuerydsl;
 import com.oneline.shimpyo.repository.dsl.ReservationQuerydsl;
 import com.oneline.shimpyo.service.PaymentService;
 import com.oneline.shimpyo.service.ReservationService;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 import static com.oneline.shimpyo.domain.BaseResponseStatus.*;
 
+@Import(RetryAspect.class)
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -41,6 +43,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final PaymentService paymentService;
     private final ReservationRepository reservationRepository;
     private final ReservationQuerydsl reservationQuerydsl;
+    private final HouseRepository houseRepository;
     private final MemberRepository memberRepository;
     private final HouseImageRepository houseImageRepository;
     private final RoomRepository roomRepository;
@@ -56,6 +59,7 @@ public class ReservationServiceImpl implements ReservationService {
         return new GetPrepareReservationRes(uuid, memberGrade.getGrade().getRank(), memberGrade.getDiscount(), myCouponList);
     }
 
+    @Retry
     @Transactional
     @Override
     public long createReservation(long memberId, PostReservationReq postReservationReq)
@@ -63,13 +67,10 @@ public class ReservationServiceImpl implements ReservationService {
         PayMent payment = paymentService.createMemberPayment(memberId, postReservationReq);
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
-        Room room = roomRepository.findById(postReservationReq.getRoomId())
+        Room room = roomRepository.findByIdWithLock(postReservationReq.getRoomId())
                 .orElseThrow(() -> new BaseException(ROOM_NONEXISTENT));
 
-        if(room.getMaxPeople() < postReservationReq.getPeopleCount() ||
-                room.getMinPeople() > postReservationReq.getPeopleCount()){
-            throw new BaseException(RESERVATION_WRONG_PEOPLE_COUNT);
-        }
+        checkCanReservation(memberId, postReservationReq, room);
 
         Reservation reservation = Reservation.builder().room(room).member(member).payMent(payment)
                 .peopleCount(postReservationReq.getPeopleCount()).phoneNumber(member.getPhoneNumber())
@@ -78,6 +79,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .checkOutDate(postReservationReq.stringToLocalDateTime(postReservationReq.getCheckOutDate()))
                 .build();
         reservationRepository.save(reservation);
+        room.setTotalCount(room.getTotalCount() - 1);
 
         return reservation.getId();
     }
@@ -107,6 +109,8 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public GetHouseReservationRes readHouseReservationList(long memberId, long houseId,
                                                            ReservationStatus reservationStatus, Pageable pageable) {
+        houseRepository.findById(houseId).orElseThrow(() -> new BaseException(HOUSE_NONEXISTENT));
+
         Page<HostReservationReq> hostReservationReqs = reservationQuerydsl
                 .readHouseReservationList(houseId, reservationStatus, pageable);
 
@@ -129,7 +133,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new BaseException(RESERVATION_CANCEL_OR_FINISHED);
         }
 
-        if(room.getMaxPeople() < peopleCount || room.getMinPeople() > peopleCount){
+        if (room.getMaxPeople() < peopleCount) {
             throw new BaseException(RESERVATION_WRONG_PEOPLE_COUNT);
         }
 
@@ -145,8 +149,32 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setReservationStatus(ReservationStatus.CANCEL);
     }
 
+    @Transactional
+    @Override
+    public void updateReservationStatus(long memberId, long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BaseException(RESERVATION_NONEXISTENT));
+
+        reservation.getRoom().setTotalCount(reservation.getRoom().getTotalCount() + 1);
+        reservation.setReservationStatus(ReservationStatus.FINISHED);
+    }
+
+    private void checkCanReservation(long memberId, PostReservationReq postReservationReq, Room room) {
+        if (room.getHouse().getMember().getId() == memberId) {
+            throw new BaseException(RESERVATION_CANT_MY_HOUSE);
+        }
+
+        if (room.getMaxPeople() < postReservationReq.getPeopleCount()) {
+            throw new BaseException(RESERVATION_WRONG_PEOPLE_COUNT);
+        }
+
+        if (room.getTotalCount() <= 0) {
+            throw new BaseException(RESERVATION_ROOM_COUNT);
+        }
+    }
+
     private void validateMember(long requestMemberId, long dbMemberId) {
-        if(requestMemberId != dbMemberId){
+        if (requestMemberId != dbMemberId) {
             throw new BaseException(INVALID_MEMBER);
         }
     }

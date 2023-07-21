@@ -1,7 +1,6 @@
 package com.oneline.shimpyo.service.impl;
 
 import com.oneline.shimpyo.domain.BaseException;
-import com.oneline.shimpyo.domain.coupon.Coupon;
 import com.oneline.shimpyo.domain.coupon.CouponId;
 import com.oneline.shimpyo.domain.coupon.MyCoupon;
 import com.oneline.shimpyo.domain.pay.PayMent;
@@ -25,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static com.oneline.shimpyo.domain.BaseResponseStatus.*;
@@ -98,7 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         PayMent payment = PayMent.builder().impUid(postReservationReq.getImpUid()).UUID(postReservationReq.getMerchantUid())
                 .payMethod(postReservationReq.getPayMethod()).price(paidPrice).payStatus(PayStatus.COMPLETE).build();
-        paymentRepository.save(payment) ;
+        paymentRepository.save(payment);
 
         return payment;
     }
@@ -162,14 +162,18 @@ public class PaymentServiceImpl implements PaymentService {
         /*Member member = memberRepository.findById(memberId).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
         MemberGrade memberGrade = member.getMemberGrade();
         priceToPay -= priceToPay / memberGrade.getDiscount();*/
-
         //쿠폰 체크
+        LocalDateTime checkIn = postReservationReq.stringToLocalDateTime(postReservationReq.getCheckInDate());
+        LocalDateTime checkOut = postReservationReq.stringToLocalDateTime(postReservationReq.getCheckOutDate());
+
+        priceToPay *= checkOut.getDayOfYear() - checkIn.getDayOfYear();
+
         if (postReservationReq.getCouponId() != EMPTY_ID) {
             CouponId couponId = new CouponId(memberId, postReservationReq.getCouponId());
             MyCoupon myCoupon = myCouponRepository.findByCouponId(couponId)
                     .orElseThrow(() -> new BaseException(COUPON_NONEXISTENT));
 
-            priceToPay -= priceToPay * myCoupon.getCoupon().getDiscount();
+            priceToPay -= (priceToPay * myCoupon.getCoupon().getDiscount()) / 100;
             myCoupon.setUsed(true);
         }
 
@@ -178,7 +182,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private int validateNonMemberPaid(PostReservationReq postReservationReq)
-            throws BaseException, IOException, IamportResponseException{
+            throws BaseException, IOException, IamportResponseException {
         Room room = roomRepository.findById(postReservationReq.getRoomId())
                 .orElseThrow(() -> new BaseException(ROOM_NONEXISTENT));
         int priceToPay = room.getPrice();

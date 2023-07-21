@@ -44,8 +44,7 @@ public class NonMemberReservationServiceImpl implements NonMemberReservationServ
         Room room = roomRepository.findById(postReservationReq.getRoomId())
                 .orElseThrow(() -> new BaseException(ROOM_NONEXISTENT));
 
-        if(room.getMaxPeople() < postReservationReq.getPeopleCount() ||
-                room.getMinPeople() > postReservationReq.getPeopleCount()){
+        if(room.getMaxPeople() < postReservationReq.getPeopleCount()){
             throw new BaseException(RESERVATION_WRONG_PEOPLE_COUNT);
         }
 
@@ -84,7 +83,7 @@ public class NonMemberReservationServiceImpl implements NonMemberReservationServ
         if (reservation.getReservationStatus() != ReservationStatus.COMPLETE) {
             throw new BaseException(RESERVATION_CANCEL_OR_FINISHED);
         }
-        if(room.getMaxPeople() < peopleCount || room.getMinPeople() > peopleCount){
+        if(room.getMaxPeople() < peopleCount){
             throw new BaseException(RESERVATION_WRONG_PEOPLE_COUNT);
         }
 

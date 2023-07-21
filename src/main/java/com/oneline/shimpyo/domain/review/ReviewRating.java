@@ -10,7 +10,7 @@ import static com.oneline.shimpyo.domain.BaseResponseStatus.REVIEW_RATING_WRONG;
 
 @Getter
 public enum ReviewRating {
-    GOOD("좋아요"), NORMAL("보통이에요"), BAD("별로에요");
+    GOOD("좋아요"), BAD("별로에요");
 
     private String status;
 

@@ -2,26 +2,39 @@ package com.oneline.shimpyo.domain.house.dto;
 
 import com.oneline.shimpyo.domain.house.HouseType;
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.List;
 
 @ToString
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class GetHouseListRes {
-
-    private long id;
+    private long houseId;
     private String name;
-    private String imageUrl;
-    private HouseType houseType;
+    private HouseType type;
+    private int price;
+    private String sido;
+    private String sigungu;
+    private long roomId;
+    private double ratio;
+    private boolean soldout;
+    private boolean wished;
+    private List<String> houseImages;
 
     @QueryProjection
-    public GetHouseListRes(long id, String name, String imageUrl, HouseType houseType) {
-        this.id = id;
+    public GetHouseListRes(long houseId, String name, HouseType type, int price, String sido, String sigungu, long roomId, double ratio) {
+        this.houseId = houseId;
         this.name = name;
-        this.imageUrl = imageUrl;
-        this.houseType = houseType;
+        this.type = type;
+        this.price = price;
+        this.sido = sido;
+        this.sigungu = sigungu;
+        this.roomId = roomId;
+        this.ratio = ratio;
+        this.soldout = false;
+        this.wished = false;
     }
 }
