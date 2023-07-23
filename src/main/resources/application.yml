@@ -12,10 +12,10 @@ cloud:
     region.static: ap-northeast-2
 
 spring:
-  profiles:
-    include: db, oauth
-#  config:
-#    import: db-config.yml, application-oauth.yml
+#  profiles:
+#    include: db, oauth
+  config:
+    import: db-config.yml, application-oauth.yml
 
   #    config import 지정해줘야 데이터 저장됨
   servlet:
@@ -52,7 +52,7 @@ spring:
         registration:
           kakao:
             client-id: temp
-            redirect-uri: http://shimpyo-api.p-e.kr:8081/login/oauth2/code/kakao
+            redirect-uri: https://shimpyo-api.p-e.kr:8081/login/oauth2/code/kakao
             client-authentication-method: POST
             authorization-grant-type: authorization_code
             scope: profile_nickname, account_email #동의 항목
@@ -62,7 +62,7 @@ spring:
             client-id: temp
             client-secret: temp
             #            token-uri: https://oauth2.googleapis.com/token
-            redirect-uri: http://shimpyo-api.p-e.kr:8081/login/oauth2/code/google # 이 uri에 코드 값을 넘겨준다
+            redirect-uri: https://shimpyo-api.p-e.kr:8081/login/oauth2/code/google # 이 uri에 코드 값을 넘겨준다
             #            resource-uri: https://www.googleapis.com/oauth2/v2/userinfo
             scope:
               - email
@@ -76,7 +76,7 @@ spring:
               - email
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: http://shimpyo-api.p-e.kr:8081/login/oauth2/code/naver
+            redirect-uri: https://shimpyo-api.p-e.kr:8081/login/oauth2/code/naver
 
         provider:
           naver:

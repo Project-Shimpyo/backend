@@ -50,13 +50,14 @@ public class MemberServiceImpl implements MemberService {
         em.persist(memberGrade);
 
         Member member = memberRepository.save(new Member(request, bCryptPasswordEncoder, memberGrade));
-//        MemberImage memberImage = MemberImage.builder()
-//                .member(member)
-//                .originalFileName(fileReq.getOriginalFileName())
-//                .savedFileName(fileReq.getOriginalFileName())
-//                .savedPath(fileReq.getSavedURL())
-//                .savedPath(fileReq.getSavedURL()).build();
-//        member.setMemberImage(memberImage);
+
+        MemberImage memberImage = MemberImage.builder()
+                .member(member)
+                .originalFileName(" ")
+                .savedFileName(" ")
+                .savedPath(" ")
+                .savedPath(" ").build();
+        member.setMemberImage(memberImage);
 
     }
 

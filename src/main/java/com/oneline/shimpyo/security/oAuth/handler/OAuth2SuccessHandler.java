@@ -35,7 +35,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 이미 회원
         if(member.getSocial()) {
-            response.sendRedirect(UriComponentsBuilder.fromUriString("http://shimpyo.o-r.kr/social/login")
+            response.sendRedirect(UriComponentsBuilder.fromUriString("https://shimpyo.o-r.kr/social/login")
                     .queryParam("user_id", member.getId())
                     .build()
                     .encode(UTF_8)
@@ -44,7 +44,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 최초 로그인이라면 회원가입 창 redirect
         else {
-            response.sendRedirect(UriComponentsBuilder.fromUriString("http://shimpyo.o-r.kr/social/add_info")
+            response.sendRedirect(UriComponentsBuilder.fromUriString("https://shimpyo.o-r.kr/social/add_info")
                     .queryParam("user_id", member.getId())
                     .build()
                     .encode(UTF_8)

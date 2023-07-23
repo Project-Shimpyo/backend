@@ -99,6 +99,7 @@ public class Member extends BaseEntity {
         this.memberGrade = memberGrade;
         this.role = CLIENT;
         this.social = false;
+        this.comments = " ";
         memberGrade.getMembers().add(this);
 
     }
