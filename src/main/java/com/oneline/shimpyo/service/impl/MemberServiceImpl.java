@@ -179,10 +179,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void oauthJoin(OAuthInfoReq oAuthInfoReq) {
+    public Member oauthJoin(OAuthInfoReq oAuthInfoReq) {
         Member member = memberRepository.findById(oAuthInfoReq.getId()).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
 
         member.oAuthJoin(oAuthInfoReq.getPhoneNumber(), oAuthInfoReq.getNickname());
+        return member;
     }
 
     @Override

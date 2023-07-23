@@ -29,15 +29,27 @@ public class OAuthController {
     private final MemberRepository memberRepository;
 
     @PostMapping("/api/oauth2-join")
-    public BaseResponse<Void> oauthJoin(@RequestBody OAuthInfoReq oAuthInfoReq) {
+    public BaseResponse<Map<String, String>>  oauthJoin(@RequestBody OAuthInfoReq oAuthInfoReq,
+                                                        HttpServletResponse response) {
+        Member member = memberService.oauthJoin(oAuthInfoReq);
 
-        memberService.oauthJoin(oAuthInfoReq);
         // 엑세스, 리프레시 쿠키 담아서 반환
-        return new BaseResponse<>();
+        String accessToken = generateOAuth2Token(member, true, AT_EXP_TIME);
+        String refreshToken = generateOAuth2Token(member, true, RT_EXP_TIME);
+
+        // Refresh Token DB에 저장
+        memberService.updateRefreshToken(member.getEmail(), refreshToken);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("utf-8");
+        response.addHeader("Set-Cookie", createCookie(refreshToken).toString());
+
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put(AT_HEADER, accessToken);
+
+        return new BaseResponse<>(responseMap);
     }
 
-
-    @GetMapping("/api/social/login/{id}")
+    @GetMapping("/oauth2/social/login/{id}")
     public BaseResponse<Map<String, String>>  socialLogin(@PathVariable Long id, HttpServletResponse response) {
         Member member = memberRepository.findById(id).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
 
@@ -56,10 +68,12 @@ public class OAuthController {
         return new BaseResponse<>(responseMap);
     }
 
-    @GetMapping("/api/oauth2-access")
+    // 이미 회원일 때
+    @PostMapping("/oauth2/oauth2-access")
     public BaseResponse<Map<String, String>> oauthToken(@RequestBody OAuth2IdReq request,
                                                         HttpServletResponse response) {
-        Member member = memberRepository.findById(request.getId()).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
+        Member member = memberRepository
+                .findById(request.getId()).orElseThrow(() -> new BaseException(MEMBER_NONEXISTENT));
 
         String accessToken = generateOAuth2Token(member, true, AT_EXP_TIME);
         String refreshToken = generateOAuth2Token(member, true, RT_EXP_TIME);

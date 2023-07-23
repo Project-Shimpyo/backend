@@ -34,7 +34,7 @@ public interface MemberService {
 
     void removeRefreshToken(Long id);
 
-    void oauthJoin(OAuthInfoReq oAuthInfoReq);
+    Member oauthJoin(OAuthInfoReq oAuthInfoReq);
 
     void findByMemberWithPhoneNumber(String phoneNumber);
 
